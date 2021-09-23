@@ -12,7 +12,7 @@ contract('Insurances Tests', async (accounts) => {
 
     it(`can't purchase insurance for zero eth`, async function () {
         await truffleAssert.reverts(
-            contract.buy(flightId, { value: 0 }),
+            contract.buyInsurance(flightId, { value: 0 }),
             "Can't insure you for nothing!"
         );
     });
@@ -22,7 +22,7 @@ contract('Insurances Tests', async (accounts) => {
         let expectedCost = web3.utils.toWei('1', 'ether');
         let expectedRefund = amountToSend - expectedCost;
 
-        let result = await contract.buy(flightId, { value: amountToSend });
+        let result = await contract.buyInsurance(flightId, { value: amountToSend });
         
         truffleAssert.eventEmitted(result, 'InsurancePurchased', (ev) => {
             return ev.insuredAmount == expectedCost && ev.refundedExcess == expectedRefund;
@@ -31,7 +31,7 @@ contract('Insurances Tests', async (accounts) => {
 
     it(`can buy insurance`, async function () {
         let amountToSend = web3.utils.toWei('0.5', 'ether');
-        let result = await contract.buy(flightId, { value: amountToSend });
+        let result = await contract.buyInsurance(flightId, { value: amountToSend });
         
         truffleAssert.eventEmitted(result, 'InsurancePurchased', (ev) => {
             return ev.insuredAmount == amountToSend;
