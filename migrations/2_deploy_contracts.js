@@ -1,5 +1,6 @@
 const Airlines = artifacts.require("Airlines");
 const Insurances = artifacts.require("Insurances");
+const Oracles = artifacts.require("Oracles");
 
 module.exports = function(deployer) {
 
@@ -8,4 +9,5 @@ module.exports = function(deployer) {
     
     deployer.deploy(Airlines, firstAirline);
     deployer.deploy(Insurances);
+    deployer.deploy(Oracles);
 }

@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-// class to deal with oracle
-contract Oracles {
+import "./Operational.sol";
+
+contract Oracles is Operational {
     // Incremented to add pseudo-randomness at various points
     uint8 private nonce = 0;
 
@@ -67,7 +68,9 @@ contract Oracles {
         string memory flight,
         uint256 timestamp,
         uint8 statusCode
-    ) internal pure {}
+    ) internal pure {
+        // TODO let the other contracts know
+    }
 
     // Register an oracle with the contract
     function registerOracle() external payable {
@@ -130,7 +133,10 @@ contract Oracles {
     }
 
     // Returns array of three non-duplicating integers from 0-9
-    function generateIndexes(address account) internal returns (uint8[3] memory) {
+    function generateIndexes(address account)
+        internal
+        returns (uint8[3] memory)
+    {
         uint8[3] memory indexes;
         indexes[0] = getRandomIndex(account);
 

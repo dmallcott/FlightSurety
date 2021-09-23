@@ -8,18 +8,13 @@ import "./Operational.sol";
 contract Insurances is Operational {
     using SafeMath for uint256;
 
-    mapping(address => mapping(bytes32 => uint256)) private insurances;
-    mapping(address => uint256) internal credits;
+    uint256 MAX_INSURANCE = 1 ether;
 
-    event InsurancePurchased(
-        bytes32 _flight,
-        uint256 insuredAmount,
-        uint256 refundedExcess
-    );
+    mapping(address => mapping(bytes32 => uint256)) insurances;
+    mapping(address => uint256) credits; // TODO you can collect twice with this
 
+    event InsurancePurchased(bytes32 _flight, uint256 insuredAmount, uint256 refundedExcess);
     event CreditApplied(bytes32 _flight, address _receiver);
-
-    uint256 private MAX_INSURANCE = 1 ether;
 
     modifier zeroOrMore() {
         require(msg.value > 0, "Can't insure you for nothing!");
@@ -58,15 +53,6 @@ contract Insurances is Operational {
         emit InsurancePurchased(_flight, amountToInsure, excessToRefund);
     }
 
-    function getInsurance(bytes32 _flight)
-        external
-        view
-        onlyOwner
-        returns (uint256 _insuredAmount)
-    {
-        return insurances[msg.sender][_flight];
-    }
-
     function credit(address _insuree) external payable whenNotPaused {
         credits[_insuree] = msg.value;
     }
@@ -79,13 +65,13 @@ contract Insurances is Operational {
         return credits[msg.sender];
     }
 
-    function withdraw(address _insuree) external whenNotPaused {
-        uint256 amountToPay = credits[_insuree];
+    function withdraw() external whenNotPaused {
+        uint256 amountToPay = credits[msg.sender];
         require(amountToPay > 0, "Address has no credit");
 
-        delete credits[_insuree];
+        delete credits[msg.sender];
 
-        (bool sent, ) = _insuree.call{value: amountToPay}("");
+        (bool sent, ) = msg.sender.call{value: amountToPay}("");
         require(sent, "Failed to send Ether");
     }
 }
