@@ -2,10 +2,10 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
 
-contract Airlines is Ownable, Pausable {
+import "./Operational.sol";
+
+contract Airlines is Operational {
     using SafeMath for uint256;
 
     struct Airline {
@@ -63,18 +63,6 @@ contract Airlines is Ownable, Pausable {
             "You haven't funded the contract!"
         );
         _;
-    }
-
-    function isOperational() external view returns (bool) {
-        return !paused();
-    }
-
-    function setOperatingStatus(bool activate) external onlyOwner {
-        if (paused() && activate) {
-            _unpause();
-        } else if (!paused() && !activate) {
-            _pause();
-        }
     }
 
     function _register(address _airline, address[] memory _voters) private {

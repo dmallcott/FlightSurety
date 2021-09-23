@@ -2,10 +2,10 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
 
-contract Insurances is Ownable, Pausable {
+import "./Operational.sol";
+
+contract Insurances is Operational {
     using SafeMath for uint256;
 
     mapping(address => mapping(bytes32 => uint256)) private insurances;
@@ -67,7 +67,7 @@ contract Insurances is Ownable, Pausable {
         return insurances[msg.sender][_flight];
     }
 
-    function credit(address _insuree) external payable {
+    function credit(address _insuree) external payable whenNotPaused {
         credits[_insuree] = msg.value;
     }
 
@@ -79,7 +79,7 @@ contract Insurances is Ownable, Pausable {
         return credits[msg.sender];
     }
 
-    function withdraw(address _insuree) external {
+    function withdraw(address _insuree) external whenNotPaused {
         uint256 amountToPay = credits[_insuree];
         require(amountToPay > 0, "Address has no credit");
 

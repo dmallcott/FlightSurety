@@ -4,8 +4,6 @@ const truffleAssert = require('truffle-assertions');
 
 contract('Airlines Tests', async (accounts) => {
 
-    let owner = accounts[0];
-    let unauthorizedAddress = accounts[1];
     let firstAirline = accounts[2];
     let secondAirline = accounts[3];
     let thirdAirline = accounts[4];
@@ -16,30 +14,6 @@ contract('Airlines Tests', async (accounts) => {
 
     before('setup contract', async () => {
         dataContract = await Airlines.new(firstAirline);
-    });
-
-    it(`(multiparty) has correct initial isOperational() value`, async function () {
-        assert.equal(await dataContract.isOperational(), true, "Incorrect initial operating status value");
-    });
-
-    it(`(multiparty) can block access to setOperatingStatus() for non-Contract Owner account`, async function () {
-        await truffleAssert.fails(
-            dataContract.setOperatingStatus(false, { from: unauthorizedAddress })
-        );
-    });
-
-    it(`(multiparty) can allow access to setOperatingStatus() for Contract Owner account`, async function () {
-        await truffleAssert.passes(
-            dataContract.setOperatingStatus(true, { from: owner })
-        );
-    });
-
-    it(`(multiparty) can block access to functions using requireIsOperational when operating status is false`, async function () {
-        // TODO: I don't like their implementation. Will rewrite.
-    });
-
-    it(`(multiparty) has correct initial isOperational() value`, async function () {
-        assert.equal(await dataContract.isOperational(), true, "Incorrect initial operating status value");
     });
 
     it(`firstAirline is registered on contract deployement`, async function () {
