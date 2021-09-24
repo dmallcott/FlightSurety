@@ -180,16 +180,8 @@ contract Airlines is Operational {
     }
 
     // TODO this needs some abuse protection
-    function _fightStatusChanged(
-        address airline,
-        string memory flight,
-        uint256 timestamp,
-        uint8 statusCode
-    ) external {
-        bytes32 _flight = getFlightKey(airline, flight, timestamp);
+    function _updateFlightStatus(bytes32 _flight, uint8 statusCode) internal {
         flights[_flight].statusCode = StatusCode(statusCode);
         flights[_flight].updatedTimestamp = block.timestamp;
-
-        // TODO credit insurances and send the money
     }
 }

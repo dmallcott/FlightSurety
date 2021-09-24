@@ -58,7 +58,7 @@ contract Insurances is Operational {
         emit InsurancePurchased(_flight, amountToInsure, excessToRefund);
     }
 
-    function credit(bytes32 _flight) external payable whenNotPaused {
+    function _credit(bytes32 _flight) internal whenNotPaused {
         Insurance[] memory _insurances = insurances[_flight];
         
         for (uint256 i = 0; i < _insurances.length; i++) {
