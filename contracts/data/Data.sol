@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./Operational.sol";
-import "./AuthorizedControl.sol";
+import "../infra/Operational.sol";
+import "../infra/AuthorizedControl.sol";
 import "./Airlines.sol";
 import "./Insurances.sol";
 

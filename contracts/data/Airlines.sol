@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-import "./Operational.sol";
+import "../infra/Operational.sol";
 
 contract Airlines is Operational {
     using SafeMath for uint256;
@@ -179,7 +179,6 @@ contract Airlines is Operational {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
 
-    // TODO this needs some abuse protection
     function _updateFlightStatus(bytes32 _flight, uint8 statusCode) internal {
         flights[_flight].statusCode = StatusCode(statusCode);
         flights[_flight].updatedTimestamp = block.timestamp;

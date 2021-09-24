@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./Operational.sol";
-import "./Data.sol";
+import "./infra/Operational.sol";
+import "./data/Data.sol";
 
 contract Oracles is Operational {
     // Incremented to add pseudo-randomness at various points
@@ -62,7 +62,7 @@ contract Oracles is Operational {
 
     Data data;
 
-    constructor (address _data) {
+    constructor(address _data) {
         data = Data(_data);
     }
 
@@ -96,6 +96,26 @@ contract Oracles is Operational {
         );
 
         return oracles[msg.sender].indexes;
+    }
+
+    // Generate a request for oracles to fetch flight information
+    function fetchFlightStatus(
+        address airline,
+        string memory flight,
+        uint256 timestamp
+    ) external {
+        uint8 index = getRandomIndex(msg.sender);
+
+        // Generate a unique key for storing the request
+        bytes32 key = keccak256(
+            abi.encodePacked(index, airline, flight, timestamp)
+        );
+
+        ResponseInfo storage response = oracleResponses[key]; 
+        response.requester = msg.sender;
+        response.isOpen = true;
+
+        emit OracleRequest(index, airline, flight, timestamp);
     }
 
     // Called by oracle when a response is available to an outstanding request

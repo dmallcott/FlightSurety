@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-import "./Operational.sol";
+import "../infra/Operational.sol";
 
 contract Insurances is Operational {
     using SafeMath for uint256;
