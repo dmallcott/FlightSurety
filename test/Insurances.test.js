@@ -39,12 +39,27 @@ contract('Insurances Tests', async (accounts) => {
     });
 
     it(`can credit insurees`, async function () {
-        let credit = web3.utils.toWei('1');
+        let expectedCredit = web3.utils.toWei('1', 'ether');
         let insuree = accounts[0];
 
-        await contract.credit(insuree, { value: credit });
+        await contract.credit(flightId);
 
-        assert.equal(await contract.availableCredit({from: insuree}), credit, "Wrong creddit");
+        assert.equal(await contract.availableCredit({from: insuree}), expectedCredit, "Wrong creddit");
+    });
+
+    it(`can withdraw my credit`, async function () {
+        var BN = web3.utils.BN;
+
+        let insuree = accounts[0];
+        let startingBalance = await web3.eth.getBalance(insuree);
+        let expectedBalance = new BN(startingBalance).add(new BN(await web3.utils.toWei('1', 'ether'))).toString();
+
+        await contract.withdraw({from: insuree});
+
+        let balanceAfterWithdraw = await web3.eth.getBalance(insuree);
+
+        assert.equal(await contract.availableCredit({from: insuree}), 0, "Wrong creddit");
+        assert.equal(expectedBalance, balanceAfterWithdraw, "Wrong balance");
     });
 
 });

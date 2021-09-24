@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./Operational.sol";
+import "./Airlines.sol";
 
 contract Oracles is Operational {
     // Incremented to add pseudo-randomness at various points
@@ -59,6 +60,12 @@ contract Oracles is Operational {
         uint256 timestamp
     );
 
+    Airlines airlines;
+
+    constructor (address _airlines) {
+        airlines = Airlines(_airlines);
+    }
+
     /**
      * @dev Called after oracle has updated flight status
      *
@@ -68,8 +75,9 @@ contract Oracles is Operational {
         string memory flight,
         uint256 timestamp,
         uint8 statusCode
-    ) internal pure {
+    ) internal {
         // TODO let the other contracts know
+        airlines._fightStatusChanged(airline, flight, timestamp, statusCode);
     }
 
     // Register an oracle with the contract

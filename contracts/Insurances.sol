@@ -10,7 +10,12 @@ contract Insurances is Operational {
 
     uint256 MAX_INSURANCE = 1 ether;
 
-    mapping(address => mapping(bytes32 => uint256)) insurances;
+    struct Insurance {
+        address insuree;
+        uint256 amount;
+    }
+
+    mapping(bytes32 => Insurance[]) insurances;
     mapping(address => uint256) credits; // TODO you can collect twice with this
 
     event InsurancePurchased(bytes32 _flight, uint256 insuredAmount, uint256 refundedExcess);
@@ -41,20 +46,24 @@ contract Insurances is Operational {
             excessToRefund = received - MAX_INSURANCE;
             amountToInsure = MAX_INSURANCE;
 
-            insurances[msg.sender][_flight] = amountToInsure;
+            insurances[_flight].push(Insurance(msg.sender, amountToInsure));
 
             _refund(excessToRefund);
         } else {
             amountToInsure = received;
 
-            insurances[msg.sender][_flight] = amountToInsure;
+            insurances[_flight].push(Insurance(msg.sender, amountToInsure));
         }
 
         emit InsurancePurchased(_flight, amountToInsure, excessToRefund);
     }
 
-    function credit(address _insuree) external payable whenNotPaused {
-        credits[_insuree] = msg.value;
+    function credit(bytes32 _flight) external payable whenNotPaused {
+        Insurance[] memory _insurances = insurances[_flight];
+        
+        for (uint256 i = 0; i < _insurances.length; i++) {
+            credits[_insurances[i].insuree] = _insurances[i].amount.mul(2);
+        }
     }
 
     function availableCredit()

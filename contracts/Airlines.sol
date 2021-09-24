@@ -76,7 +76,8 @@ contract Airlines is Operational {
         airlinesAwaitingRegistration[_airline].push(msg.sender);
         address[] memory voters = airlinesAwaitingRegistration[_airline];
 
-        if (registeredAirlines.div(2) <= voters.length) { // TODO this division is not working
+        if (registeredAirlines.div(2) <= voters.length) {
+            // TODO this division is not working
             _register(_airline, voters);
             delete airlinesAwaitingRegistration[_airline];
         } else {
@@ -104,9 +105,17 @@ contract Airlines is Operational {
         }
     }
 
-    function fund() external payable onlyRegisteredAirline(msg.sender) whenNotPaused {
+    function fund()
+        external
+        payable
+        onlyRegisteredAirline(msg.sender)
+        whenNotPaused
+    {
         require(msg.value == 10 ether, "The price for activation is 10 ether");
-        require(!airlines[msg.sender].isFunded, "You've already funded the contract");
+        require(
+            !airlines[msg.sender].isFunded,
+            "You've already funded the contract"
+        );
 
         airlines[msg.sender].isFunded = true;
     }
@@ -141,11 +150,17 @@ contract Airlines is Operational {
         string memory _flight,
         uint256 _timestamp
     ) external onlyRegisteredAirline(_airline) whenNotPaused {
-        require(_timestamp > block.timestamp, "Can't register a flight in the past");
+        require(
+            _timestamp > block.timestamp,
+            "Can't register a flight in the past"
+        );
 
         bytes32 flightKey = getFlightKey(_airline, _flight, _timestamp);
 
-        require(flights[flightKey].airline == address(0), "Flight already exists");
+        require(
+            flights[flightKey].airline == address(0),
+            "Flight already exists"
+        );
 
         flights[flightKey] = Flight(
             StatusCode.STATUS_CODE_UNKNOWN,
@@ -162,5 +177,19 @@ contract Airlines is Operational {
         uint256 timestamp
     ) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
+    }
+
+    // TODO this needs some abuse protection
+    function _fightStatusChanged(
+        address airline,
+        string memory flight,
+        uint256 timestamp,
+        uint8 statusCode
+    ) external {
+        bytes32 _flight = getFlightKey(airline, flight, timestamp);
+        flights[_flight].statusCode = StatusCode(statusCode);
+        flights[_flight].updatedTimestamp = block.timestamp;
+
+        // TODO credit insurances and send the money
     }
 }
