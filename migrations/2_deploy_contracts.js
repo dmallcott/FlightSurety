@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 const Data = artifacts.require("Data");
 const Oracles = artifacts.require("Oracles");
 
@@ -12,4 +14,14 @@ module.exports = async function(deployer) {
     const oracle = await Oracles.deployed();
 
     await data.authorizeContract(oracle.address);
+
+    let config = {
+        localhost: {
+            url: 'http://localhost:9545',
+            dataAddress: data.address,
+            oracleAddress: oracle.address
+        }
+    }
+    fs.writeFileSync(__dirname + '/../dapp/config.json',JSON.stringify(config, null, '\t'), 'utf-8');
+    fs.writeFileSync(__dirname + '/../server/config.json',JSON.stringify(config, null, '\t'), 'utf-8');
 }

@@ -6,7 +6,12 @@
 module.exports = {
   networks: {
     develop: {
-      port: 9545
+      host: "127.0.0.1",
+      network_id: 5777,
+      port: 9545,
+      accounts: 20,
+      defaultEtherBalance: 500,
+
     },
     rinkeby: {
       provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/efe263b4367b4828aedbdc9bc0f1e759`),

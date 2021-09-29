@@ -7,7 +7,9 @@
     "test": "test"
   },
   "scripts": {
-    "test": "truffle test"
+    "test": "truffle test",
+    "dapp": "",
+    "server": "cd server && npm start;"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.3.1",
