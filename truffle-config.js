@@ -10,7 +10,7 @@ module.exports = {
       network_id: 5777,
       port: 9545,
       accounts: 20,
-      defaultEtherBalance: 500,
+      defaultEtherBalance: 500
 
     },
     rinkeby: {

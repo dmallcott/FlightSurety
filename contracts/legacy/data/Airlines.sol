@@ -13,25 +13,8 @@ contract Airlines is Operational {
         bool isFunded;
     }
 
-    struct Flight {
-        StatusCode statusCode;
-        uint256 updatedTimestamp;
-        address airline;
-    }
-
-    enum StatusCode {
-        STATUS_CODE_UNKNOWN,
-        STATUS_CODE_ON_TIME,
-        STATUS_CODE_LATE_AIRLINE,
-        STATUS_CODE_LATE_WEATHER,
-        STATUS_CODE_LATE_TECHNICAL,
-        STATUS_CODE_LATE_OTHER
-    }
-
     // Data
     mapping(address => Airline) private airlines;
-    mapping(bytes32 => Flight) private flights;
-
     mapping(address => address[]) private airlinesAwaitingRegistration;
 
     // Utils
@@ -40,7 +23,6 @@ contract Airlines is Operational {
     // Events
     event AirlineAwaitingRegistration(address _airline);
     event AirlineRegistered(address _airline);
-    event FlightRegistered(bytes32 _flight);
 
     constructor(address firstAirline) {
         address[] memory voters = new address[](1);
@@ -85,8 +67,8 @@ contract Airlines is Operational {
         }
     }
 
-    function registerAirline(address _airline)
-        public
+    function _registerAirline(address _airline)
+        internal
         onlyRegisteredAirline(msg.sender)
         onlyFundedAirline
     {
@@ -143,44 +125,5 @@ contract Airlines is Operational {
         Airline memory airline = airlines[_airline];
 
         return (airline.registeredBy, airline.isFunded);
-    }
-
-    function registerFlight(
-        address _airline,
-        string memory _flight,
-        uint256 _timestamp
-    ) external onlyRegisteredAirline(_airline) whenNotPaused {
-        require(
-            _timestamp > block.timestamp,
-            "Can't register a flight in the past"
-        );
-
-        bytes32 flightKey = getFlightKey(_airline, _flight, _timestamp);
-
-        require(
-            flights[flightKey].airline == address(0),
-            "Flight already exists"
-        );
-
-        flights[flightKey] = Flight(
-            StatusCode.STATUS_CODE_UNKNOWN,
-            block.timestamp,
-            _airline
-        );
-
-        emit FlightRegistered(flightKey);
-    }
-
-    function getFlightKey(
-        address airline,
-        string memory flight,
-        uint256 timestamp
-    ) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(airline, flight, timestamp));
-    }
-
-    function _updateFlightStatus(bytes32 _flight, uint8 statusCode) internal {
-        flights[_flight].statusCode = StatusCode(statusCode);
-        flights[_flight].updatedTimestamp = block.timestamp;
     }
 }

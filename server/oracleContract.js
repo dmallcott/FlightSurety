@@ -2,7 +2,6 @@ var Oracles = require('../build/contracts/Oracles.json');
 var Config = require('./config.json');
 var Web3 = require('web3');
 
-
 var registeredOracles = [];
 
 let config = Config['localhost'];
@@ -23,14 +22,15 @@ async function initOracles() {
     let accounts = await web3.eth.getAccounts();
 
     for (let i = 0; i < 20; i++) {
-        let ignore = await this.registerOracle(accounts[i]);
-        let indexes = await this.getIndexes(accounts[i]);
+        let indexes = await this.registerOracle(accounts[i]);
 
         registeredOracles.push({
             "account": accounts[i],
             "indexes": indexes
         });
     }
+
+    console.log(oracles);
 }
 
 async function registerOracle(account) {
@@ -38,20 +38,12 @@ async function registerOracle(account) {
 
     console.log("Attempting to register oracle: " + account);
     let registrationFee = web3.utils.toWei("1");
-    console.log("Fetching gas price");
-    let _gasPrice = await web3.eth.getGasPrice();
-    console.log("Estimating gas");
-    let _gas = await oracles.methods.registerOracle().estimateGas({
-        from: account,
-        value: registrationFee,
-        gasPrice: _gasPrice
-    });
-    console.log("Registering oracle");
     return oracles.methods.registerOracle().send({
         from: account,
         value: registrationFee,
-        gas: _gas,
-        gasPrice: _gasPrice
+        gas: 1000000
+    }).then(function(receipt) {
+        return receipt.events.OracleRegistered.returnValues.indexes;
     });
 }
 
@@ -60,18 +52,8 @@ async function getIndexes(account) {
     if (!account) return;
 
     console.log("Fetching indexes for account: " + account)
-    console.log("Fetching gas price");
-    let _gasPrice = await web3.eth.getGasPrice();
-    console.log("Estimating gas");
-    let _gas = await oracles.methods.getMyIndexes().estimateGas({
-        from: account,
-        gasPrice: _gasPrice
-    });
-    console.log("Getting indexes");
     return oracles.methods.getMyIndexes().call({
-        from: account,
-        gas: _gas,
-        gasPrice: _gasPrice
+        from: account
     });
 }
 

@@ -10,6 +10,14 @@ contract Data is Operational, AuthorizedControl, Airlines, Insurances {
 
     constructor(address firstAirline) Operational() AuthorizedControl() Airlines(firstAirline) Insurances() { }
 
+    function getFlightKey(
+        address airline,
+        string memory flight,
+        uint256 timestamp
+    ) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(airline, flight, timestamp));
+    }
+
     function fightStatusChanged(
         address airline,
         string memory flight,
@@ -18,7 +26,7 @@ contract Data is Operational, AuthorizedControl, Airlines, Insurances {
     ) external onlyAuthorizedContract {
         bytes32 _flight = getFlightKey(airline, flight, timestamp);
 
-        super._updateFlightStatus(_flight, statusCode);
-        super._credit(_flight);
+        //super._updateFlightStatus(_flight, statusCode);
+        //super._credit(_flight);
     }
 }

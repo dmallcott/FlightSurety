@@ -50,6 +50,11 @@ contract Oracles is Operational {
         uint8 status
     );
 
+    event OracleRegistered(
+        address oracle,
+        uint8[3] indexes
+    );
+
     // Event fired when flight status request is submitted
     // Oracles track this and if they have a matching index
     // they fetch data and submit a response
@@ -83,10 +88,13 @@ contract Oracles is Operational {
     function registerOracle() external payable {
         // Require registration fee
         require(msg.value >= REGISTRATION_FEE, "Registration fee is required");
+        // require(!oracles[msg.sender].isRegistered, "Oracle already registered");
 
         uint8[3] memory indexes = generateIndexes(msg.sender);
 
         oracles[msg.sender] = Oracle({isRegistered: true, indexes: indexes});
+
+        emit OracleRegistered(msg.sender, indexes);
     }
 
     function getMyIndexes() external view returns (uint8[3] memory) {
