@@ -1,10 +1,106 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./infra/Operational.sol";
-import "./data/Data.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Oracles is Operational {
+import "./infra/Operational.sol";
+import "./infra/AuthorizedControl.sol";
+
+/************************************************** */
+/* FlightSurety Smart Contract                      */
+/************************************************** */
+contract FlightSuretyApp is Ownable {
+    using SafeMath for uint256;
+
+    struct Flight {
+        bool isRegistered;
+        uint8 statusCode;
+        uint256 updatedTimestamp;
+        address airline;
+    }
+
+    /********************************************************************************************/
+    /*                                       DATA VARIABLES                                     */
+    /********************************************************************************************/
+
+    // Flight status codees
+    uint8 private constant STATUS_CODE_UNKNOWN = 0;
+    uint8 private constant STATUS_CODE_ON_TIME = 10;
+    uint8 private constant STATUS_CODE_LATE_AIRLINE = 20;
+    uint8 private constant STATUS_CODE_LATE_WEATHER = 30;
+    uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
+    uint8 private constant STATUS_CODE_LATE_OTHER = 50;
+
+    mapping(bytes32 => Flight) private flights;
+
+    /********************************************************************************************/
+    /*                                       FUNCTION MODIFIERS                                 */
+    /********************************************************************************************/
+
+    /********************************************************************************************/
+    /*                                       UTILITY FUNCTIONS                                  */
+    /********************************************************************************************/
+
+    /********************************************************************************************/
+    /*                                     SMART CONTRACT FUNCTIONS                             */
+    /********************************************************************************************/
+
+    /**
+     * @dev Add an airline to the registration queue
+     *
+     */
+    function registerAirline()
+        external
+        pure
+        returns (bool success, uint256 votes)
+    {
+
+        // TODO
+        return (success, 0);
+    }
+
+    /**
+     * @dev Register a future flight for insuring.
+     *
+     */
+    function registerFlight() external pure {
+        // TODO
+    }
+
+    /**
+     * @dev Called after oracle has updated flight status
+     *
+     */
+    function processFlightStatus(
+        address airline,
+        string memory flight,
+        uint256 timestamp,
+        uint8 statusCode
+    ) internal pure {}
+
+    // Generate a request for oracles to fetch flight information
+    function fetchFlightStatus(
+        address airline,
+        string memory flight,
+        uint256 timestamp
+    ) external {
+        uint8 index = getRandomIndex(msg.sender);
+
+        // Generate a unique key for storing the request
+        bytes32 key = keccak256(
+            abi.encodePacked(index, airline, flight, timestamp)
+        );
+
+        ResponseInfo storage response = oracleResponses[key]; 
+        response.requester = msg.sender;
+        response.isOpen = true;
+        
+        emit OracleRequest(index, airline, flight, timestamp);
+    }
+
+    // region ORACLE MANAGEMENT
+
     // Incremented to add pseudo-randomness at various points
     uint8 private nonce = 0;
 
@@ -50,11 +146,6 @@ contract Oracles is Operational {
         uint8 status
     );
 
-    event OracleRegistered(
-        address oracle,
-        uint8[3] indexes
-    );
-
     // Event fired when flight status request is submitted
     // Oracles track this and if they have a matching index
     // they fetch data and submit a response
@@ -65,36 +156,14 @@ contract Oracles is Operational {
         uint256 timestamp
     );
 
-    Data data;
-
-    constructor(address _data) {
-        data = Data(_data);
-    }
-
-    /**
-     * @dev Called after oracle has updated flight status
-     *
-     */
-    function processFlightStatus(
-        address airline,
-        string memory flight,
-        uint256 timestamp,
-        uint8 statusCode
-    ) internal {
-        data.fightStatusChanged(airline, flight, timestamp, statusCode);
-    }
-
     // Register an oracle with the contract
     function registerOracle() external payable {
         // Require registration fee
         require(msg.value >= REGISTRATION_FEE, "Registration fee is required");
-        // require(!oracles[msg.sender].isRegistered, "Oracle already registered");
 
-        uint8[3] memory indexes = generateIndexes(msg.sender);
+        uint8[3] memory indexes = this.generateIndexes(msg.sender);
 
         oracles[msg.sender] = Oracle({isRegistered: true, indexes: indexes});
-
-        emit OracleRegistered(msg.sender, indexes);
     }
 
     function getMyIndexes() external view returns (uint8[3] memory) {
@@ -104,26 +173,6 @@ contract Oracles is Operational {
         );
 
         return oracles[msg.sender].indexes;
-    }
-
-    // Generate a request for oracles to fetch flight information
-    function fetchFlightStatus(
-        address airline,
-        string memory flight,
-        uint256 timestamp
-    ) external {
-        uint8 index = getRandomIndex(msg.sender);
-
-        // Generate a unique key for storing the request
-        bytes32 key = keccak256(
-            abi.encodePacked(index, airline, flight, timestamp)
-        );
-
-        ResponseInfo storage response = oracleResponses[key]; 
-        response.requester = msg.sender;
-        response.isOpen = true;
-
-        emit OracleRequest(index, airline, flight, timestamp);
     }
 
     // Called by oracle when a response is available to an outstanding request
@@ -167,11 +216,16 @@ contract Oracles is Operational {
         }
     }
 
+    function getFlightKey(
+        address airline,
+        string memory flight,
+        uint256 timestamp
+    ) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(airline, flight, timestamp));
+    }
+
     // Returns array of three non-duplicating integers from 0-9
-    function generateIndexes(address account)
-        internal
-        returns (uint8[3] memory)
-    {
+    function generateIndexes(address account) external returns (uint8[3] memory) {
         uint8[3] memory indexes;
         indexes[0] = getRandomIndex(account);
 
@@ -188,15 +242,13 @@ contract Oracles is Operational {
         return indexes;
     }
 
-    // Returns array of three non-duplicating integers from 0-9
     function getRandomIndex(address account) internal returns (uint8) {
         uint8 maxValue = 10;
 
-        // Pseudo random number...the incrementing nonce adds variation
         uint8 random = uint8(
             uint256(
                 keccak256(
-                    abi.encodePacked(blockhash(block.number - nonce++), account)
+                    abi.encodePacked(block.timestamp, account, nonce++)
                 )
             ) % maxValue
         );
@@ -207,4 +259,6 @@ contract Oracles is Operational {
 
         return random;
     }
+
+    // endregion
 }
