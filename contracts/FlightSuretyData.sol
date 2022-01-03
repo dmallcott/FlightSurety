@@ -24,8 +24,8 @@ contract FlightSuretyData is Ownable, Operational {
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
 
-    mapping(address => Airline) private airlines;
-    mapping(address => address[]) private airlinesAwaitingRegistration;
+    mapping(address => Airline) airlines;
+    mapping(address => address[]) airlinesAwaitingRegistration;
     uint256 public registeredAirlines = 0;
 
     mapping(bytes32 => Insurance[]) insurances;
@@ -109,6 +109,7 @@ contract FlightSuretyData is Ownable, Operational {
         external
         onlyRegisteredAirline
         onlyFundedAirline
+        returns (uint256)
     {
         require(
             airlines[_airline].registeredBy.length == 0,
@@ -120,8 +121,12 @@ contract FlightSuretyData is Ownable, Operational {
             voters[0] = msg.sender;
 
             _register(_airline, voters);
+
+            return airlines[_airline].registeredBy.length;
         } else {
             _queueAirlineForRegistration(_airline);
+
+            return airlinesAwaitingRegistration[_airline].length;
         }
     }
 

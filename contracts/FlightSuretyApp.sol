@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./infra/Operational.sol";
 import "./infra/AuthorizedControl.sol";
+import "./FlightSuretyData.sol";
 
 /************************************************** */
 /* FlightSurety Smart Contract                      */
@@ -34,13 +35,11 @@ contract FlightSuretyApp is Ownable {
 
     mapping(bytes32 => Flight) private flights;
 
-    /********************************************************************************************/
-    /*                                       FUNCTION MODIFIERS                                 */
-    /********************************************************************************************/
+    FlightSuretyData private dataContract;
 
-    /********************************************************************************************/
-    /*                                       UTILITY FUNCTIONS                                  */
-    /********************************************************************************************/
+    constructor(address _data) {
+        dataContract = FlightSuretyData(payable(_data));
+    }
 
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
@@ -50,14 +49,13 @@ contract FlightSuretyApp is Ownable {
      * @dev Add an airline to the registration queue
      *
      */
-    function registerAirline()
+    function registerAirline(address _airline)
         external
-        pure
-        returns (bool success, uint256 votes)
+        returns (bool _success, uint256 _votes)
     {
+        uint256 votes = dataContract.registerAirline(_airline);
 
-        // TODO
-        return (success, 0);
+        return (true, votes);
     }
 
     /**
