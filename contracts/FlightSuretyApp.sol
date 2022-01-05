@@ -15,23 +15,25 @@ contract FlightSuretyApp is Ownable {
     using SafeMath for uint256;
 
     struct Flight {
-        bool isRegistered;
-        uint8 statusCode;
+        StatusCode statusCode;
         uint256 updatedTimestamp;
         address airline;
     }
 
+    enum StatusCode {
+        STATUS_CODE_UNKNOWN,
+        STATUS_CODE_ON_TIME,
+        STATUS_CODE_LATE_AIRLINE,
+        STATUS_CODE_LATE_WEATHER,
+        STATUS_CODE_LATE_TECHNICAL,
+        STATUS_CODE_LATE_OTHER
+    }
+
+    event FlightRegistered(bytes32 _flight);
+
     /********************************************************************************************/
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
-
-    // Flight status codees
-    uint8 private constant STATUS_CODE_UNKNOWN = 0;
-    uint8 private constant STATUS_CODE_ON_TIME = 10;
-    uint8 private constant STATUS_CODE_LATE_AIRLINE = 20;
-    uint8 private constant STATUS_CODE_LATE_WEATHER = 30;
-    uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
-    uint8 private constant STATUS_CODE_LATE_OTHER = 50;
 
     mapping(bytes32 => Flight) private flights;
 
@@ -62,8 +64,30 @@ contract FlightSuretyApp is Ownable {
      * @dev Register a future flight for insuring.
      *
      */
-    function registerFlight() external pure {
-        // TODO
+    function registerFlight(
+        address _airline,
+        string memory _flight,
+        uint256 _timestamp
+    ) external {
+        require(
+            _timestamp > block.timestamp,
+            "Can't register a flight in the past"
+        );
+
+        bytes32 flightKey = getFlightKey(_airline, _flight, _timestamp);
+
+        require(
+            flights[flightKey].airline == address(0),
+            "Flight already exists"
+        );
+
+        flights[flightKey] = Flight(
+            StatusCode.STATUS_CODE_UNKNOWN,
+            block.timestamp,
+            _airline
+        );
+
+        emit FlightRegistered(flightKey);
     }
 
     /**
@@ -90,14 +114,16 @@ contract FlightSuretyApp is Ownable {
             abi.encodePacked(index, airline, flight, timestamp)
         );
 
-        ResponseInfo storage response = oracleResponses[key]; 
+        ResponseInfo storage response = oracleResponses[key];
         response.requester = msg.sender;
         response.isOpen = true;
-        
+
         emit OracleRequest(index, airline, flight, timestamp);
     }
 
-    // region ORACLE MANAGEMENT
+    /********************************************************************************************/
+    /*                                     ORACLE MANAGEMENT                                    */
+    /********************************************************************************************/
 
     // Incremented to add pseudo-randomness at various points
     uint8 private nonce = 0;
@@ -223,7 +249,10 @@ contract FlightSuretyApp is Ownable {
     }
 
     // Returns array of three non-duplicating integers from 0-9
-    function generateIndexes(address account) external returns (uint8[3] memory) {
+    function generateIndexes(address account)
+        external
+        returns (uint8[3] memory)
+    {
         uint8[3] memory indexes;
         indexes[0] = getRandomIndex(account);
 
@@ -245,9 +274,7 @@ contract FlightSuretyApp is Ownable {
 
         uint8 random = uint8(
             uint256(
-                keccak256(
-                    abi.encodePacked(block.timestamp, account, nonce++)
-                )
+                keccak256(abi.encodePacked(block.timestamp, account, nonce++))
             ) % maxValue
         );
 
@@ -257,6 +284,4 @@ contract FlightSuretyApp is Ownable {
 
         return random;
     }
-
-    // endregion
 }

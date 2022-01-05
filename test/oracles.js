@@ -5,15 +5,15 @@ contract('Oracles', async (accounts) => {
 
     var contract;
     var owner = accounts[0];
-    // var oracle1 = accounts[1];
     var airline = accounts[1];
-    // var flight = web3.utils.asciiToHex("FR3231");
-    // var flightDepartureTime = Date.now() + 600000;
+    var oracle = accounts[2];
+    var flight = web3.utils.asciiToHex("FR3231");
+    var flightDepartureTime = Date.now() + 600000;
 
     const TEST_ORACLES_COUNT = 20;
 
     before('setup contract', async () => {
-        contract = await FlightSuretyApp.new(owner);
+        contract = await FlightSuretyApp.new(owner, {from: owner});
 
         // Watch contract events
         const STATUS_CODE_UNKNOWN = 0;
@@ -38,84 +38,77 @@ contract('Oracles', async (accounts) => {
         }
     });
 
-
-    // it('dasdasdasdasdaes', async () => {
+    // it('can request flight status', async () => {
 
     //     // ARRANGE
-        
+    //     let flight = 'ND1309'; // Course number
+    //     let timestamp = Math.floor(Date.now() / 1000);
+
+    //     // Submit a request for oracles to get status information for a flight
+    //     await contract.fetchFlightStatus(airline, flight, timestamp);
     //     // ACT
+
+    //     // Since the Index assigned to each test account is opaque by design
+    //     // loop through all the accounts and for each account, all its Indexes (indices?)
+    //     // and submit a response. The contract will reject a submission if it was
+    //     // not requested so while sub-optimal, it's a good test of that feature
     //     for (let a = 0; a < TEST_ORACLES_COUNT; a++) {
-    //         console.log(`GENNING ${a}: ${accounts[a]}`);
-    //         await contract.generateIndexes(accounts[a]);
+
+    //         // Get oracle information
+    //         let oracleIndexes = await contract.getMyIndexes.call({ from: accounts[a] });
+    //         for (let idx = 0; idx < 3; idx++) {
+
+    //             try {
+    //                 // Submit a response...it will only be accepted if there is an Index match
+    //                 await contract.submitOracleResponse(oracleIndexes[idx], airline, flight, timestamp, STATUS_CODE_ON_TIME, { from: accounts[a] });
+
+    //             }
+    //             catch (e) {
+    //                 // Enable this when debugging
+    //                 // console.log('\nError', idx, oracleIndexes[idx].toNumber(), flight, timestamp);
+    //             }
+
+    //         }
     //     }
     // });
 
-    it('can request flight status', async () => {
-
-        // ARRANGE
-        let flight = 'ND1309'; // Course number
-        let timestamp = Math.floor(Date.now() / 1000);
-
-        // Submit a request for oracles to get status information for a flight
-        await contract.fetchFlightStatus(airline, flight, timestamp);
-        // ACT
-
-        // Since the Index assigned to each test account is opaque by design
-        // loop through all the accounts and for each account, all its Indexes (indices?)
-        // and submit a response. The contract will reject a submission if it was
-        // not requested so while sub-optimal, it's a good test of that feature
-        for (let a = 0; a < TEST_ORACLES_COUNT; a++) {
-
-            // Get oracle information
-            let oracleIndexes = await contract.getMyIndexes.call({ from: accounts[a] });
-            for (let idx = 0; idx < 3; idx++) {
-
-                try {
-                    // Submit a response...it will only be accepted if there is an Index match
-                    await contract.submitOracleResponse(oracleIndexes[idx], airline, flight, timestamp, STATUS_CODE_ON_TIME, { from: accounts[a] });
-
-                }
-                catch (e) {
-                    // Enable this when debugging
-                    // console.log('\nError', idx, oracleIndexes[idx].toNumber(), flight, timestamp);
-                }
-
-            }
-        }
-
-
+    it(`can add a flight`, async function () {
+        truffleAssert.eventEmitted(
+            await contract.registerFlight(airline, "FR3132", Date.now() + 60000),
+            'FlightRegistered'
+        );
     });
 
+    it(`can't register oracle for free`, async function () {
+        await truffleAssert.reverts(contract.registerOracle({ from: oracle, value: 0 }));
+    });
 
+    it(`can register oracle`, async function () {
+        await truffleAssert.passes(
+            contract.registerOracle({ from: oracle, value: web3.utils.toWei('1') })
+        );
+    });
 
-    // it(`can't register oracle for free`, async function () {
-    //     await truffleAssert.reverts(contract.registerOracle({ from: oracle1, value: 0 }));
-    // });
+    it(`once registered, can fetch my indexes`, async function () {
+        await truffleAssert.passes(
+            contract.getMyIndexes({ from: oracle })
+        )
+    });
 
-    // it(`can register oracle`, async function () {
-    //     await truffleAssert.passes(
-    //         contract.registerOracle({ from: oracle1, value: web3.utils.toWei('1') })
-    //     );
-    // });
-
-    // it(`once registered, can fetch my indexes`, async function () {
-    //     await truffleAssert.passes(
-    //         contract.getMyIndexes({ from: oracle1 })
-    //     )
-    // });
-
-    // it(`once registered, can fetch flight status`, async function () {
-    //     truffleAssert.eventEmitted(
-    //         await contract.fetchFlightStatus(airline, flight, flightDepartureTime),
-    //         'OracleRequest'
-    //     )
-    // });
+    it(`once registered, can fetch flight status`, async function () {
+        truffleAssert.eventEmitted(
+            await contract.fetchFlightStatus(airline, flight, flightDepartureTime),
+            'OracleRequest'
+        )
+    });
 
     // it(`once registered, can submit a response`, async function () {
     //     let request = await contract.fetchFlightStatus(airline, flight, flightDepartureTime);
     //     let statusCode = 3;
+    //     let index = request.logs[0].args.index;
 
-    //     let result = await contract.submitOracleResponse(request.logs[0].args.index, airline, flight, flightDepartureTime, statusCode, { from: oracle1 });
+    //     console.log(`Index: ${index}`);
+    //     let result = await contract.submitOracleResponse(index, airline, flight, flightDepartureTime, statusCode, { from: oracle });
 
     //     truffleAssert.eventEmitted(result, 'OracleReport');
     // });

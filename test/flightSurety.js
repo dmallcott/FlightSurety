@@ -68,13 +68,6 @@ contract('Flight Surety Tests', async (accounts) => {
         assert.equal(await contract.registeredAirlines.call(), 5, "Wrong number of airlines")
     });
 
-    // it(`can add a flight`, async function () {
-    //     truffleAssert.eventEmitted(
-    //         await contract.registerFlight(firstAirline, "FR3132", Date.now() + 60000),
-    //         'FlightRegistered'
-    //     );
-    // });
-
     it(`can't purchase insurance for zero eth`, async function () {
         await truffleAssert.reverts(
             contract.buy(flightId, { value: 0 }),
