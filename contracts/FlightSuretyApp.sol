@@ -61,6 +61,15 @@ contract FlightSuretyApp is Ownable {
     }
 
     /**
+     * @dev Initial funding for the insurance. Unless there are too many delayed flights
+     *      resulting in insurance payouts, the contract should be self-sustaining
+     *
+     */
+    function fundAirline() external payable {
+        dataContract.fund {value: msg.value} ();
+    }
+
+    /**
      * @dev Register a future flight for insuring.
      *
      */

@@ -29,7 +29,7 @@ const App = {
   },
 
   fillAirline: function () {
-    document.getElementById("inputAirlineAddress").value = "0x65400CEA4A9B8aEE80aDa894aD0746bcDFd6072A";
+    document.getElementById("inputAirlineAddress").value = this.account;
     document.getElementById("inputAirlineName").value = "Ryanair";
   },
 
@@ -49,6 +49,23 @@ const App = {
     }
     
   },
+
+  fundAirline: async function () {
+    const airlineAddress = document.getElementById("inputAirlineAddress").value;
+    try {
+      let airlineToFund = (!airlineAddress) ? this.account : airlineAddress;
+
+      await this.contract.methods.fundAirline().send({ from: airlineToFund, value: this.web3.utils.toWei("10") });
+
+      document.getElementById("fundingSuccess").innerHTML = "Airline funded!";
+      document.getElementById("fundingSuccess").hidden = false;  
+      document.getElementById("fundingError").hidden = true; 
+    } catch (error) {
+      document.getElementById("fundingError").innerHTML = error.message;
+      document.getElementById("fundingError").hidden = false;  
+      document.getElementById("fundingSuccess").hidden = true;
+    }
+  }
 };
 
 window.App = App;

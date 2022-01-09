@@ -39,7 +39,22 @@
     <div class="alert alert-success" role="alert" id="airlineSuccess" hidden></div>
     <div class="alert alert-error" role="alert" id="airlineError" hidden></div>
   </div>
-  <br />
+  <br/>
+  <div class="container">
+    <h2>Airline funding</h2>
+    <p>It's 10 ETH and we will use the recently created airline or accounts[0]. Also remember accounts[0] is used as the first airline registered on contract creation and it's considered funded.</p>
+
+    <form>
+      <button type='button' class="btn btn-primary" onclick="App.fundAirline()">Fund</button>
+    </form>
+      
+    <br/>
+    <div class="alert alert-success" role="alert" id="fundingSuccess" hidden></div>
+    <div class="alert alert-error" role="alert" id="fundingError" hidden></div>
+  </div>
+  <br/>
+
+
   <div class="container" id="containerProductOverview" hidden>
     <hr>
     <h2>Product Overview</h2>
