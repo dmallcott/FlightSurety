@@ -22,21 +22,21 @@ contract('Flight Surety Tests', async (accounts) => {
 
     it(`can't register an airline twice`, async function () {
         await truffleAssert.reverts(
-            contract.registerAirline(firstAirline, { from: firstAirline }),
+            contract.registerAirline(firstAirline, "name", { from: firstAirline }),
             "Airline already registered"
         );
     });
 
     it(`for the first four airlines, only an airline can register another airline`, async function () {
         await truffleAssert.reverts(
-            contract.registerAirline(secondAirline, { from: secondAirline })
+            contract.registerAirline(secondAirline, "name", { from: secondAirline })
         );
     });
 
     it(`for the first four airlines, first airline can register second airline`, async function () {
-        await truffleAssert.passes(contract.registerAirline(secondAirline, { from: firstAirline }));
-        await truffleAssert.passes(contract.registerAirline(thirdAirline, { from: firstAirline }));
-        await truffleAssert.passes(contract.registerAirline(fourthAirline, { from: firstAirline }));
+        await truffleAssert.passes(contract.registerAirline(secondAirline, "name", { from: firstAirline }));
+        await truffleAssert.passes(contract.registerAirline(thirdAirline, "name", { from: firstAirline }));
+        await truffleAssert.passes(contract.registerAirline(fourthAirline, "name", { from: firstAirline }));
 
         assert.equal(await contract.registeredAirlines.call(), 4, "Wrong number of airlines")
     });
@@ -55,15 +55,15 @@ contract('Flight Surety Tests', async (accounts) => {
 
     it(`for the fifth onwards airline, add them to the registration queue`, async function () {
         let fifthAirline = accounts[6];
-        let votes = await contract.registerAirline.call(fifthAirline, { from: firstAirline });
+        let votes = await contract.registerAirline.call(fifthAirline, "name", { from: firstAirline });
 
         assert.equal(await contract.registeredAirlines.call(), 4, "Wrong number of airlines");
         assert.equal(votes, 1, "Wrong number of votes");
     });
 
     it(`can vote an airline`, async function () {
-        await truffleAssert.passes(contract.registerAirline(fifthAirline, { from: secondAirline }));
-        await truffleAssert.passes(contract.registerAirline(fifthAirline, { from: thirdAirline }));
+        await truffleAssert.passes(contract.registerAirline(fifthAirline, "name", { from: secondAirline }));
+        await truffleAssert.passes(contract.registerAirline(fifthAirline, "name", { from: thirdAirline }));
 
         assert.equal(await contract.registeredAirlines.call(), 5, "Wrong number of airlines")
     });

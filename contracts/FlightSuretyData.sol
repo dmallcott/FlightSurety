@@ -12,6 +12,7 @@ contract FlightSuretyData is Ownable, Operational {
 
     struct Airline {
         address[] registeredBy;
+        string name;
         bool isFunded;
     }
 
@@ -52,7 +53,7 @@ contract FlightSuretyData is Ownable, Operational {
 
     modifier onlyRegisteredAirline() {
         require(
-            airlines[msg.sender].registeredBy.length != 0,
+            airlines[tx.origin].registeredBy.length != 0,
             "You aren't a registered airline"
         );
         _;
@@ -60,7 +61,7 @@ contract FlightSuretyData is Ownable, Operational {
 
     modifier onlyFundedAirline() {
         require(
-            airlines[msg.sender].isFunded,
+            airlines[tx.origin].isFunded,
             "You haven't funded the contract!"
         );
         _;
@@ -73,7 +74,7 @@ contract FlightSuretyData is Ownable, Operational {
     constructor(address firstAirline) {
         address[] memory voters = new address[](1);
         voters[0] = firstAirline;
-        _register(firstAirline, voters);
+        _register(firstAirline, voters, "First Airline");
         airlines[firstAirline].isFunded = true;
     }
 
@@ -81,19 +82,19 @@ contract FlightSuretyData is Ownable, Operational {
     /*                                          AIRLINES                                        */
     /********************************************************************************************/
 
-    function _register(address _airline, address[] memory _voters) private {
-        airlines[_airline] = Airline(_voters, false);
+    function _register(address _airline, address[] memory _voters, string memory _name) private {
+        airlines[_airline] = Airline(_voters, _name, false);
         registeredAirlines++;
 
         emit AirlineRegistered(_airline);
     }
 
-    function _queueAirlineForRegistration(address _airline) private {
-        airlinesAwaitingRegistration[_airline].push(msg.sender);
+    function _queueAirlineForRegistration(address _airline, string memory _name) private {
+        airlinesAwaitingRegistration[_airline].push(tx.origin);
         address[] memory voters = airlinesAwaitingRegistration[_airline];
 
         if (registeredAirlines.div(2) <= voters.length) {
-            _register(_airline, voters);
+            _register(_airline, voters, _name);
             delete airlinesAwaitingRegistration[_airline];
         } else {
             emit AirlineAwaitingRegistration(_airline);
@@ -105,7 +106,7 @@ contract FlightSuretyData is Ownable, Operational {
      *      Can only be called from FlightSuretyApp contract
      *
      */
-    function registerAirline(address _airline)
+    function registerAirline(address _airline, string memory _name)
         external
         onlyRegisteredAirline
         onlyFundedAirline
@@ -118,13 +119,13 @@ contract FlightSuretyData is Ownable, Operational {
 
         if (registeredAirlines < 4) {
             address[] memory voters = new address[](1);
-            voters[0] = msg.sender;
+            voters[0] = tx.origin;
 
-            _register(_airline, voters);
+            _register(_airline, voters, _name);
 
             return airlines[_airline].registeredBy.length;
         } else {
-            _queueAirlineForRegistration(_airline);
+            _queueAirlineForRegistration(_airline, _name);
 
             return airlinesAwaitingRegistration[_airline].length;
         }
@@ -138,11 +139,11 @@ contract FlightSuretyData is Ownable, Operational {
     function fund() external payable onlyRegisteredAirline {
         require(msg.value == 10 ether, "The price for activation is 10 ether");
         require(
-            !airlines[msg.sender].isFunded,
+            !airlines[tx.origin].isFunded,
             "You've already funded the contract"
         );
 
-        airlines[msg.sender].isFunded = true;
+        airlines[tx.origin].isFunded = true;
     }
 
     function getAirline(address _airline)
@@ -161,7 +162,7 @@ contract FlightSuretyData is Ownable, Operational {
     /********************************************************************************************/
 
     function _refund(uint256 amount) private {
-        (bool sent, ) = msg.sender.call{value: amount}("");
+        (bool sent, ) = tx.origin.call{value: amount}("");
         require(sent, "Failed to send Ether");
     }
 
@@ -181,13 +182,13 @@ contract FlightSuretyData is Ownable, Operational {
             excessToRefund = received - MAX_INSURANCE;
             amountToInsure = MAX_INSURANCE;
 
-            insurances[_flight].push(Insurance(msg.sender, amountToInsure));
+            insurances[_flight].push(Insurance(tx.origin, amountToInsure));
 
             _refund(excessToRefund);
         } else {
             amountToInsure = received;
 
-            insurances[_flight].push(Insurance(msg.sender, amountToInsure));
+            insurances[_flight].push(Insurance(tx.origin, amountToInsure));
         }
 
         emit InsurancePurchased(_flight, amountToInsure, excessToRefund);
@@ -210,7 +211,7 @@ contract FlightSuretyData is Ownable, Operational {
         view
         returns (uint256 _availableCredit)
     {
-        return credits[msg.sender];
+        return credits[tx.origin];
     }
 
     /**
@@ -218,12 +219,12 @@ contract FlightSuretyData is Ownable, Operational {
      *
      */
     function pay() external whenNotPaused {
-        uint256 amountToPay = credits[msg.sender];
+        uint256 amountToPay = credits[tx.origin];
         require(amountToPay > 0, "Address has no credit");
 
-        delete credits[msg.sender];
+        delete credits[tx.origin];
 
-        (bool sent, ) = msg.sender.call{value: amountToPay}("");
+        (bool sent, ) = tx.origin.call{value: amountToPay}("");
         require(sent, "Failed to send Ether");
     }
 

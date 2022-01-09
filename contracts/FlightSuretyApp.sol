@@ -51,11 +51,11 @@ contract FlightSuretyApp is Ownable {
      * @dev Add an airline to the registration queue
      *
      */
-    function registerAirline(address _airline)
+    function registerAirline(address _airline, string memory _name)
         external
         returns (bool _success, uint256 _votes)
     {
-        uint256 votes = dataContract.registerAirline(_airline);
+        uint256 votes = dataContract.registerAirline(_airline, _name);
 
         return (true, votes);
     }

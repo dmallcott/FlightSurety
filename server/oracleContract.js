@@ -29,8 +29,6 @@ async function initOracles() {
             "indexes": indexes
         });
     }
-
-    console.log(oracles);
 }
 
 async function registerOracle(account) {
@@ -40,14 +38,12 @@ async function registerOracle(account) {
     let registrationFee = web3.utils.toWei("1");
     return oracles.methods.registerOracle().send({
         from: account,
-        value: registrationFee,
-        gas: 1000000
+        value: registrationFee
     }).then(function(receipt) {
         return receipt.events.OracleRegistered.returnValues.indexes;
     });
 }
 
-// Upon startup, 20+ oracles are registered and their assigned indexes are persisted in memory
 async function getIndexes(account) {
     if (!account) return;
 
