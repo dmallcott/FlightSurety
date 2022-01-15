@@ -35,7 +35,7 @@ contract FlightSuretyApp is Ownable {
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
 
-    mapping(bytes32 => Flight) private flights;
+    mapping(bytes32 => Flight) public flights;
 
     FlightSuretyData private dataContract;
 
@@ -92,7 +92,7 @@ contract FlightSuretyApp is Ownable {
 
         flights[flightKey] = Flight(
             StatusCode.STATUS_CODE_UNKNOWN,
-            block.timestamp,
+            _timestamp,
             _airline
         );
 

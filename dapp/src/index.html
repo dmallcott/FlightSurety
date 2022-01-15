@@ -54,6 +54,30 @@
   </div>
   <br/>
 
+  <div class="container">
+    <h2>Register flight</h2>
+    <span class="badge bg-info text-dark" style="cursor: pointer" onclick="App.fillFlight()">Auto-fill form</span>
+
+    <form>
+      <br>
+      <div class="mb-3">
+        <label for="inputFlightAirlineAddress" class="form-label">What's the eth address for your airline?</label>
+        <input type="text" class="form-control" id="inputFlightAirlineAddress" aria-describedby="airlineHelp" placeholder="0x28e9242337204a3C76cDe0d84Bf44e93D94B87B2">
+        <br/>
+        <label for="inputFlightCode" class="form-label">What the flight code?</label>
+        <input type="text" class="form-control" id="inputFlightCode" placeholder="FR3131">
+        <br/>
+        <label for="inputFlightTime" class="form-label">When is the flight?</label>
+        <input type="text" class="form-control" id="inputFlightTime" placeholder="1642278897398">
+        <div class="form-text">Since this is just a project, please pass a timestamp.</div>
+      </div>
+      <button type='button' class="btn btn-primary" onclick="App.registerFlight()">Create</button>
+    </form>
+      
+    <br/>
+    <div class="alert alert-success" role="alert" id="flightSuccess" hidden></div>
+    <div class="alert alert-error" role="alert" id="flightError" hidden></div>
+  </div>
 
   <div class="container" id="containerProductOverview" hidden>
     <hr>

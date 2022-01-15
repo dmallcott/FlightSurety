@@ -33,6 +33,12 @@ const App = {
     document.getElementById("inputAirlineName").value = "Ryanair";
   },
 
+  fillFlight: function () {
+    document.getElementById("inputFlightAirlineAddress").value = this.account;
+    document.getElementById("inputFlightCode").value = "FR3131";
+    document.getElementById("inputFlightTime").value = Date.now();
+  },
+
   registerAirline: async function () {
     const airlineAddress = document.getElementById("inputAirlineAddress").value;
     const airlineName = document.getElementById("inputAirlineName").value;
@@ -65,7 +71,24 @@ const App = {
       document.getElementById("fundingError").hidden = false;  
       document.getElementById("fundingSuccess").hidden = true;
     }
-  }
+  },
+
+  registerFlight: async function () {
+    const flightAirlineAddress = document.getElementById("inputFlightAirlineAddress").value;
+    const flightCode = document.getElementById("inputFlightCode").value;
+    const flightTime = document.getElementById("inputFlightTime").value;
+    try {
+      await this.contract.methods.registerFlight(flightAirlineAddress, flightCode, flightTime).call();
+
+      document.getElementById("flightSuccess").innerHTML = "Flight registered!";
+      document.getElementById("flightSuccess").hidden = false;  
+      document.getElementById("flightError").hidden = true; 
+    } catch (error) {
+      document.getElementById("flightError").innerHTML = error.message;
+      document.getElementById("flightError").hidden = false;  
+      document.getElementById("flightSuccess").hidden = true;
+    }
+  },
 };
 
 window.App = App;
