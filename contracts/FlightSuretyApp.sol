@@ -18,6 +18,7 @@ contract FlightSuretyApp is Ownable {
         StatusCode statusCode;
         uint256 updatedTimestamp;
         address airline;
+        string code;
     }
 
     enum StatusCode {
@@ -35,7 +36,7 @@ contract FlightSuretyApp is Ownable {
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
 
-    mapping(bytes32 => Flight) public flights;
+    mapping(bytes32 => Flight) private flights;
 
     FlightSuretyData private dataContract;
 
@@ -46,6 +47,10 @@ contract FlightSuretyApp is Ownable {
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
+
+    function buyInsurance(bytes32 _flight) external payable {
+        dataContract.buy {value: msg.value} (_flight);
+    }
 
     /**
      * @dev Add an airline to the registration queue
@@ -77,7 +82,7 @@ contract FlightSuretyApp is Ownable {
         address _airline,
         string memory _flight,
         uint256 _timestamp
-    ) external {
+    ) external returns (bytes32 _flightKey, string memory _flightCode, uint256 _flightTime) {
         require(
             _timestamp > block.timestamp,
             "Can't register a flight in the past"
@@ -93,10 +98,13 @@ contract FlightSuretyApp is Ownable {
         flights[flightKey] = Flight(
             StatusCode.STATUS_CODE_UNKNOWN,
             _timestamp,
-            _airline
+            _airline,
+            _flight
         );
 
         emit FlightRegistered(flightKey);
+
+        return (flightKey, _flight, _timestamp);
     }
 
     /**

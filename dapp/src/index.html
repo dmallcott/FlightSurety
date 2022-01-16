@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.bundle.min.js"></script>
 </head>
 
 <body>
@@ -31,6 +32,11 @@
 
         <label for="inputAirlineAddress" class="form-label">What's the name for your airline?</label>
         <input type="text" class="form-control" id="inputAirlineName" aria-describedby="airlineName" placeholder="Ryanair">
+
+
+    <br>
+    <select id="dropdownAirlines"></select>
+    <br>
       </div>
       <button type='button' class="btn btn-primary" onclick="App.registerAirline()">Create</button>
     </form>
@@ -77,6 +83,31 @@
     <br/>
     <div class="alert alert-success" role="alert" id="flightSuccess" hidden></div>
     <div class="alert alert-error" role="alert" id="flightError" hidden></div>
+  </div>
+
+  <div class="container">
+    <h2>Buy flight insurance</h2>
+    <form>
+      <br>
+      <div class="mb-3">
+        <div class="form-group">
+          <label for="dropdownFlights">What's your flight?</label>
+          <select class="form-control" id="dropdownFlights">
+          </select>
+        </div>
+        <br>
+        <label for="inputInsuranceAmount" class="form-label">How much do you want to be insured for?</label>
+        <input type="text" class="form-control" id="inputInsuranceAmount" placeholder="1" min="0" max="1">
+        <div class="form-text">Max 1 ETH.</div>
+
+      </div>
+        
+      <button type='button' class="btn btn-primary" onclick="App.buyInsurance()">Buy</button>
+    </form>
+      
+    <br/>
+    <div class="alert alert-success" role="alert" id="insuranceSuccess" hidden></div>
+    <div class="alert alert-error" role="alert" id="insuranceError" hidden></div>
   </div>
 
   <div class="container" id="containerProductOverview" hidden>
