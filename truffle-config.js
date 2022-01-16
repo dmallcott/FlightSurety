@@ -11,7 +11,6 @@ module.exports = {
       port: 9545,
       accounts: 20,
       defaultEtherBalance: 500
-
     },
     rinkeby: {
       provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/efe263b4367b4828aedbdc9bc0f1e759`),

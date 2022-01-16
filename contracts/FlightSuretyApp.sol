@@ -11,7 +11,7 @@ import "./FlightSuretyData.sol";
 /************************************************** */
 /* FlightSurety Smart Contract                      */
 /************************************************** */
-contract FlightSuretyApp is Ownable {
+contract FlightSuretyApp is Ownable, Operational {
     using SafeMath for uint256;
 
     struct Flight {
@@ -82,7 +82,7 @@ contract FlightSuretyApp is Ownable {
         address _airline,
         string memory _flight,
         uint256 _timestamp
-    ) external returns (bytes32 _flightKey, string memory _flightCode, uint256 _flightTime) {
+    ) external returns (bytes32 _flightKey, string memory _flightCode, uint256 _flightTime, address airline) {
         require(
             _timestamp > block.timestamp,
             "Can't register a flight in the past"
@@ -104,7 +104,7 @@ contract FlightSuretyApp is Ownable {
 
         emit FlightRegistered(flightKey);
 
-        return (flightKey, _flight, _timestamp);
+        return (flightKey, _flight, _timestamp, _airline);
     }
 
     /**
@@ -116,7 +116,9 @@ contract FlightSuretyApp is Ownable {
         string memory flight,
         uint256 timestamp,
         uint8 statusCode
-    ) internal pure {}
+    ) internal pure {
+        // TODO gotta process flight status now (credit people and shit)
+    }
 
     // Generate a request for oracles to fetch flight information
     function fetchFlightStatus(
@@ -180,6 +182,11 @@ contract FlightSuretyApp is Ownable {
         uint8 status
     );
 
+    event OracleRegistered(
+        address oracle,
+        uint8[3] indexes
+    );
+
     event OracleReport(
         address airline,
         string flight,
@@ -205,6 +212,8 @@ contract FlightSuretyApp is Ownable {
         uint8[3] memory indexes = this.generateIndexes(msg.sender);
 
         oracles[msg.sender] = Oracle({isRegistered: true, indexes: indexes});
+
+        emit OracleRegistered(msg.sender, indexes);
     }
 
     function getMyIndexes() external view returns (uint8[3] memory) {

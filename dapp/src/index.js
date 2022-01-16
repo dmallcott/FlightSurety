@@ -69,24 +69,29 @@ const App = {
       when1.setDate(when1.getDate() + 1) // Tomorrow
       let key1 = await this.contract.methods.registerFlight(this.account, code1, when1.getTime()).call();
       this.flights.push(
-        new Flight(code1, when1, key1)
+        key1
       );
+
       let code2 = "EJ1111"
       var when2 = new Date()
       when2.setDate(when2.getDate() + 1) // Tomorrow
       let key2 = await this.contract.methods.registerFlight(this.account, code2, when2.getTime()).call();
       this.flights.push(
-        new Flight(code2, when2, key2)
+        key2
       );
+      
       for (let i in this.flights) {
         var newDiv = document.createElement("option");
-        newDiv.value = this.flights[i].code;
-        newDiv.innerHTML = this.flights[i].code + " @ " + this.flights[i].time.toISOString();
+        newDiv.value = this.flights[i]._flightCode;
+        newDiv.innerHTML = this.flights[i]._flightCode + " @ " + new Date(parseInt(this.flights[i]._flightTime)).toLocaleString();
         document.getElementById("dropdownFlights").appendChild(newDiv);
+        newDiv = document.createElement("option");
+        newDiv.value = this.flights[i]._flightCode;
+        newDiv.innerHTML = this.flights[i]._flightCode + " @ " + new Date(parseInt(this.flights[i]._flightTime)).toLocaleString();
+        document.getElementById("dropdownFlightsStatus").appendChild(newDiv);
       }
-
     } catch (error) {
-      // console.log(error);
+      console.log(error);
       // alert("Could not initialise flights");
     }
   },
@@ -144,7 +149,7 @@ const App = {
       let result = await this.contract.methods.registerFlight(flightAirlineAddress, flightCode, flightTime).call();
 
       this.flights.push(
-        new Flight(flightCode, flightTime, result)
+        result
       );
 
       document.getElementById("flightSuccess").innerHTML = "Flight registered with key: " + result;
@@ -164,7 +169,7 @@ const App = {
     const insuranceAmount = document.getElementById("inputInsuranceAmount").value;
     
     try {
-      await this.contract.methods.buyInsurance(flightToInsure.key._flightKey).send({ from: this.account, value: this.web3.utils.toWei(insuranceAmount) });
+      await this.contract.methods.buyInsurance(flightToInsure._flightKey).send({ from: this.account, value: this.web3.utils.toWei(insuranceAmount) });
   
       document.getElementById("insuranceSuccess").innerHTML = "Insurance purchased!";
       document.getElementById("insuranceSuccess").hidden = false;  
@@ -173,6 +178,25 @@ const App = {
       document.getElementById("insuranceError").innerHTML = error.message;
       document.getElementById("insuranceError").hidden = false;  
       document.getElementById("insuranceSuccess").hidden = true;
+    }
+  },
+
+  fetchFlightStatus: async function () {
+    const flight = this.flights[
+      document.getElementById("dropdownFlightsStatus").selectedIndex
+    ];
+    
+    try {
+      let result = await this.contract.methods.fetchFlightStatus(flight.airline, flight._flightCode, flight._flightTime).send({from: this.account});
+      console.log(result)
+
+      document.getElementById("statusRequestSuccess").innerHTML = "Flight status request submitted!";
+      document.getElementById("statusRequestSuccess").hidden = false;  
+      document.getElementById("statusRequestError").hidden = true; 
+    } catch (error) {
+      document.getElementById("statusRequestError").innerHTML = error.message;
+      document.getElementById("statusRequestError").hidden = false;  
+      document.getElementById("statusRequestSuccess").hidden = true;
     }
   },
 
