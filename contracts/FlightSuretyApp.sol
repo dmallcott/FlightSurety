@@ -116,8 +116,9 @@ contract FlightSuretyApp is Ownable, Operational {
         string memory flight,
         uint256 timestamp,
         uint8 statusCode
-    ) internal pure {
-        // TODO gotta process flight status now (credit people and shit)
+    ) internal {
+        bytes32 flightKey = getFlightKey(airline, flight, timestamp);
+        dataContract.creditInsurees(flightKey);
     }
 
     // Generate a request for oracles to fetch flight information

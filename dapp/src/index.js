@@ -1,14 +1,6 @@
 import Web3 from "web3";
 import FlightSuretyApp from "../../build/contracts/FlightSuretyApp.json";
 
-class Flight {
-  constructor(code, time, key) {
-    this.code = code;
-    this.time = time;
-    this.key = key;
-  }
-}
-
 const App = {
   web3: null,
   account: null,
@@ -84,15 +76,67 @@ const App = {
         var newDiv = document.createElement("option");
         newDiv.value = this.flights[i]._flightCode;
         newDiv.innerHTML = this.flights[i]._flightCode + " @ " + new Date(parseInt(this.flights[i]._flightTime)).toLocaleString();
+        newDiv.addEventListener("change", this.showFlightStatus(), false);
         document.getElementById("dropdownFlights").appendChild(newDiv);
         newDiv = document.createElement("option");
         newDiv.value = this.flights[i]._flightCode;
         newDiv.innerHTML = this.flights[i]._flightCode + " @ " + new Date(parseInt(this.flights[i]._flightTime)).toLocaleString();
+        newDiv.addEventListener("change", this.showFlightStatus(), false);
         document.getElementById("dropdownFlightsStatus").appendChild(newDiv);
       }
     } catch (error) {
       console.log(error);
       // alert("Could not initialise flights");
+    } finally {
+      this.initFlightStatusCheck();
+    }
+  },
+
+  initFlightStatusCheck() {
+    let self = this;
+
+    this.contract.events.FlightStatusInfo({
+        fromBlock: 0
+    }, function (error, event) {
+        if (error) {
+            console.log(error);
+        } else {
+            let index = self.flights.findIndex(f => 
+              f._flightCode == event.returnValues.flight 
+              // && f._flightTime == event.returnValues.timestamp // skipping check to make testing easier
+            );
+
+            self.flights[index]._status = event.returnValues.status;
+            self.showFlightStatus();
+        }
+    });
+  },
+
+  statusToString: function(_status) {
+    switch(parseInt(_status)) {
+      case 1:
+        return "Your flight is on time"
+      case 2:
+        return "Your flight is late because the airline is not great"
+      case 3:
+        return "Your flight is late due to weather"
+      case 4:
+        return "Your flight is late due to a technical fault"
+      case 5:
+        return "Your flight is late. Too bad."
+      case 0:
+      default:
+        return "We have no idea how your flight is doing"
+    }
+  },
+
+  showFlightStatus: function() {
+    const flight = this.flights[
+      document.getElementById("dropdownFlightsStatus").selectedIndex
+    ];
+
+    if (flight && flight._status) {
+      document.getElementById("flightStatus").innerHTML = this.statusToString(flight._status);
     }
   },
 
@@ -188,7 +232,6 @@ const App = {
     
     try {
       let result = await this.contract.methods.fetchFlightStatus(flight.airline, flight._flightCode, flight._flightTime).send({from: this.account});
-      console.log(result)
 
       document.getElementById("statusRequestSuccess").innerHTML = "Flight status request submitted!";
       document.getElementById("statusRequestSuccess").hidden = false;  
