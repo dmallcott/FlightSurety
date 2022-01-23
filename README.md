@@ -17,6 +17,10 @@ For the frontend:
 * Truffle: `v5.4.6`
 * web3: `^1.2.4`
 
+## Caveat
+I am not proud of this code. I started with a very ambitious idea but had to revert everything in order to tick all rubric boxes instead. This project was unnecesarily long and I spent most of my time debugging flaky solidty methods than actually learning. `FlightSuretyApp.getRandomIndex()` (part of the provided template) literally cost me weeks of work. It literally was the solution to ![this question](https://knowledge.udacity.com/questions/707089). 
+
+At the very least, I can say it ticks the boxes of the rubric. But it killed the joy I had for this course and made me question if it's work finishing. 
 
 ## See it in action
 For your convienience as the reviewer I've included a few images of the working project.
