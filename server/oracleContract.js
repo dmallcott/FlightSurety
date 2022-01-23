@@ -1,16 +1,13 @@
 var Oracles = require('../build/contracts/Oracles.json');
 var Config = require('./config.json');
 var Web3 = require('web3');
+const e = require('express');
 
 var registeredOracles = [];
 
 let config = Config['localhost'];
 let web3 = new Web3(new Web3.providers.WebsocketProvider(config.url.replace('http', 'ws')));
 let oracles = new web3.eth.Contract(Oracles.abi, config.oracleAddress);
-
-// .on('data', function(event){
-//     console.log(event); // same results as the optional callback above
-// });
 
 // Upon startup, 20+ oracles are registered and their assigned indexes are persisted in memory
 async function initOracles() {
@@ -55,10 +52,14 @@ async function getIndexes(account) {
 }
 
 async function submitResponse(oracle, index, airline, flight, timestamp) {
-    console.log("Submitting oracle response");
+    console.log(`Submitting oracle response: ${oracle}, ${airline}, ${flight}, ${timestamp}`);
     let statusCode = 3; // STATUS_CODE_LATE_WEATHER
-    await oracles.methods.submitOracleResponse(index, airline, flight, timestamp, statusCode)
+    try {
+        await oracles.methods.submitOracleResponse(index, airline, flight, timestamp, statusCode)
             .send({ from: oracle });
+    } catch (error) {
+        console.error(error);
+    }   
 }
 
 async function listenToEvents() {
@@ -73,7 +74,7 @@ async function listenToEvents() {
             let compatibleOracles = registeredOracles.filter(o => o.indexes.includes(event.returnValues.index));
             
             if (!compatibleOracles) return;
-    
+
             compatibleOracles.forEach(o => {
                 submitResponse(
                     o.account,

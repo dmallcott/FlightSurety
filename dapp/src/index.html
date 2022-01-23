@@ -108,7 +108,6 @@
     <div class="alert alert-error" role="alert" id="insuranceError" hidden></div>
   </div>
 
-
   <div class="container">
     <h2>Flight status update</h2>
     <form>
@@ -129,6 +128,32 @@
 
     <div class="alert alert-success" role="alert" id="statusRequestSuccess" hidden></div>
     <div class="alert alert-error" role="alert" id="statusRequestError" hidden></div>
+  </div>
+
+  <div class="container">
+    <h2>Insurance claims</h2>
+    <form>
+      <br>
+      <div class="mb-3">
+        <div class="form-group">
+          <label for="creditAvailable">Do I have any credit?</label>      
+          <span class="badge bg-primary" style="cursor: pointer" onclick="App.checkCredit()">Check</span>
+          <input type="text" class="form-control" style="margin-top: 1em;" id="creditAvailable" disabled/>
+        </div>
+      </div>
+      <br>
+      <div id="withdawal" class="mb-3" hidden>
+        <div class="form-group">
+          <label for="creditAvailable">Withdraw my credits!</label>      
+          <span class="badge bg-primary" style="cursor: pointer" onclick="App.withdrawCredits()">Withdraw</span>
+          <input type="text" class="form-control" style="margin-top: 1em;" id="creditsWithdrawn" disabled/>
+          
+          <div class="alert alert-success" role="alert" id="creditWithdrawalSuccess" hidden></div>
+          <div class="alert alert-error" role="alert" id="creditWithdrawalError" hidden></div>
+        </div>
+      </div>
+    </form>
+    <br/>
   </div>
 
   <script src="index.js"></script>

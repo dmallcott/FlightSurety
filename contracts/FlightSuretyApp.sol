@@ -65,6 +65,14 @@ contract FlightSuretyApp is Ownable, Operational {
         return (true, votes);
     }
 
+    function checkCredit() external view returns (uint256 _availableCredit) {
+        return dataContract.availableCredit();
+    }
+
+    function withdrawCredits() external {
+        dataContract.pay();
+    }
+
     /**
      * @dev Initial funding for the insurance. Unless there are too many delayed flights
      *      resulting in insurance payouts, the contract should be self-sustaining
@@ -105,20 +113,6 @@ contract FlightSuretyApp is Ownable, Operational {
         emit FlightRegistered(flightKey);
 
         return (flightKey, _flight, _timestamp, _airline);
-    }
-
-    /**
-     * @dev Called after oracle has updated flight status
-     *
-     */
-    function processFlightStatus(
-        address airline,
-        string memory flight,
-        uint256 timestamp,
-        uint8 statusCode
-    ) internal {
-        bytes32 flightKey = getFlightKey(airline, flight, timestamp);
-        dataContract.creditInsurees(flightKey);
     }
 
     // Generate a request for oracles to fetch flight information
@@ -224,6 +218,22 @@ contract FlightSuretyApp is Ownable, Operational {
         );
 
         return oracles[msg.sender].indexes;
+    }
+    
+    /**
+     * @dev Called after oracle has updated flight status
+     *
+     */
+    function processFlightStatus(
+        address airline,
+        string memory flight,
+        uint256 timestamp,
+        uint8 statusCode
+    ) internal {
+        if (statusCode > 1) {
+            bytes32 flightKey = getFlightKey(airline, flight, timestamp);
+            dataContract.creditInsurees(flightKey);
+        }
     }
 
     // Called by oracle when a response is available to an outstanding request

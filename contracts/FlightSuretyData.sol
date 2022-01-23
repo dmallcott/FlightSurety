@@ -202,7 +202,6 @@ contract FlightSuretyData is Ownable, Operational {
 
         for (uint256 i = 0; i < _insurances.length; i++) {
             credits[_insurances[i].insuree] = _insurances[i].amount.mul(2);
-            // TODO limit to authorised contracts
         }
     }
 

@@ -101,13 +101,13 @@ const App = {
         if (error) {
             console.log(error);
         } else {
-            let index = self.flights.findIndex(f => 
-              f._flightCode == event.returnValues.flight 
-              // && f._flightTime == event.returnValues.timestamp // skipping check to make testing easier
-            );
+          let index = self.flights.findIndex(f => 
+            f._flightCode == event.returnValues.flight 
+            // && f._flightTime == event.returnValues.timestamp // skipping check to make testing easier
+          );
 
-            self.flights[index]._status = event.returnValues.status;
-            self.showFlightStatus();
+          self.flights[index]._status = event.returnValues.status;
+          self.showFlightStatus();
         }
     });
   },
@@ -196,7 +196,7 @@ const App = {
         result
       );
 
-      document.getElementById("flightSuccess").innerHTML = "Flight registered with key: " + result;
+      document.getElementById("flightSuccess").innerHTML = "Flight registered with key: " + result._flightKey;
       document.getElementById("flightSuccess").hidden = false;  
       document.getElementById("flightError").hidden = true; 
     } catch (error) {
@@ -243,6 +243,38 @@ const App = {
     }
   },
 
+  checkCredit: async function () {
+    try {
+      let credit = await this.contract.methods.checkCredit().call({ from: this.account });
+
+      document.getElementById("creditAvailable").innerHTML = credit;
+      document.getElementById("creditAvailable").value = credit;
+
+      if (credit > 0) {
+        showWithdrawal();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  },
+
+  showWithdrawal: function() {
+    document.getElementById("withdrawal").visibility = visible;
+  },
+
+  withdrawCredits: async function () {
+    try {
+      await this.contract.methods.withdrawCredits().call({ from: this.account });
+
+      document.getElementById("creditWithdrawalSuccess").innerHTML = "Your credits where withdrawn successfully!";
+      document.getElementById("creditWithdrawalSuccess").hidden = false;  
+      document.getElementById("creditWithdrawalError").hidden = true; 
+    } catch (error) {
+      document.getElementById("creditWithdrawalError").innerHTML = error.message;
+      document.getElementById("creditWithdrawalError").hidden = false;  
+      document.getElementById("creditWithdrawalSuccess").hidden = true;
+    }
+  }
 };
 
 window.App = App;
